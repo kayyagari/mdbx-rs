@@ -1,8 +1,8 @@
 [package]
-name = "mdbx-sys"
+name = "mdbx-sys-plus"
 # NB: When modifying, also modify html_root_url in lib.rs
 # NB: The version must match the version of mdbx
-version = "0.9.3"
+version = "0.1.0"
 edition = "2018"
 authors = [
     "Dan Burkert <dan@danburkert.com>",
