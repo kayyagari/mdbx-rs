@@ -1,0 +1,3 @@
+[submodule "mdbx-sys/libmdbx"]
+	path = mdbx-sys/libmdbx
+	url = https://github.com/erthink/libmdbx

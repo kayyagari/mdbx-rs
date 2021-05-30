@@ -2,26 +2,16 @@
 #[path = "bindgen.rs"]
 mod generate;
 
-use std::{env, path::PathBuf};
+use cmake::Config;
 
 fn main() {
     #[cfg(feature = "bindgen")]
     generate::generate();
 
-    let mut mdbx = PathBuf::from(&env::var("CARGO_MANIFEST_DIR").unwrap());
-    mdbx.push("libmdbx");
-
-    let mut builder = cc::Build::new();
-
-    builder
-        .file(mdbx.join("mdbx.c"))
-        .flag_if_supported("-Wno-unused-parameter")
-        .flag_if_supported("-Wbad-function-cast")
-        .flag_if_supported("-Wuninitialized");
-
-    let flags = format!("{:?}", builder.get_compiler().cflags_env());
-    builder.define("MDBX_BUILD_FLAGS", flags.as_str());
-    builder.define("MDBX_TXN_CHECKOWNER", "0");
-
-    builder.compile("libmdbx.a")
+    let mut dst = Config::new("libmdbx")
+        .define("MDBX_TXN_CHECKOWNER", "OFF")
+        .build();
+    dst.push("lib");
+    println!("cargo:rustc-link-search=native={}", dst.display());
+    println!("cargo:rustc-link-lib=mdbx");
 }
