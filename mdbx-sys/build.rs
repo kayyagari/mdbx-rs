@@ -1,8 +1,6 @@
 use bindgen::callbacks::{IntKind, ParseCallbacks};
 use std::{env, path::PathBuf};
 
-use cmake::Config;
-
 #[derive(Debug)]
 struct Callbacks;
 
@@ -76,11 +74,20 @@ fn main() {
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
 
-    let mut dst = Config::new("libmdbx")
-        .define("MDBX_INSTALL_STATIC", "ON")
-        .define("MDBX_TXN_CHECKOWNER", "OFF")
-        .build();
-    dst.push("lib");
-    println!("cargo:rustc-link-search=native={}", dst.display());
-    println!("cargo:rustc-link-lib=static=mdbx-static");
+    let mut mdbx = PathBuf::from(&env::var("CARGO_MANIFEST_DIR").unwrap());
+    mdbx.push("libmdbx");
+
+    let mut builder = cc::Build::new();
+
+    builder
+        .file(mdbx.join("mdbx.c"))
+        .flag_if_supported("-Wno-unused-parameter")
+        .flag_if_supported("-Wbad-function-cast")
+        .flag_if_supported("-Wuninitialized");
+
+    let flags = format!("{:?}", builder.get_compiler().cflags_env());
+    builder.define("MDBX_BUILD_FLAGS", flags.as_str());
+    builder.define("MDBX_TXN_CHECKOWNER", "0");
+
+    builder.compile("libmdbx.a")
 }
